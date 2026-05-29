@@ -1,134 +1,116 @@
 # angular-nestjs-fullstack-starter
 
-Angular + NestJS + PostgreSQL starter with **feature-driven** layout. Docker config lives under `docker/`; add domain features as you build the app.
+Angular 21 + NestJS 11 + PostgreSQL starter with **feature-driven** layout, email/password JWT auth, and Docker support.
 
-## Folder structure
+## Quick start (local dev)
 
-```
-angular-nestjs-fullstack-starter/
-├── docker/
-│   ├── docker-compose.yml             # App services + PostgreSQL
-│   ├── frontend.Dockerfile
-│   ├── backend.Dockerfile
-│   └── nginx.conf
-├── frontend/                          # Angular
-│   └── src/
-│       ├── app/
-│       │   ├── core/                  # Singletons: guards, interceptors, API client
-│       │   │   ├── auth.guard.ts
-│       │   │   ├── auth.interceptor.ts
-│       │   │   └── api.service.ts
-│       │   ├── shared/                # Reusable UI, pipes, directives, models
-│       │   │   ├── components/
-│       │   │   ├── pipes/
-│       │   │   └── models/
-│       │   ├── features/              # One folder per feature (lazy-loaded routes)
-│       │   │   ├── auth/              # included in starter
-│       │   │   │   ├── login/
-│       │   │   │   ├── register/
-│       │   │   │   ├── auth.service.ts
-│       │   │   │   └── auth.routes.ts
-│       │   │   └── <feature-name>/
-│       │   │       ├── components/
-│       │   │       ├── <feature-name>.service.ts
-│       │   │       ├── <feature-name>.routes.ts
-│       │   │       └── ...
-│       │   ├── app.config.ts
-│       │   └── app.routes.ts
-│       └── environments/
-│           ├── environment.ts
-│           └── environment.prod.ts
-├── backend/                           # NestJS
-│   └── src/
-│       ├── common/                    # Decorators, filters, guards, interceptors, shared DTOs
-│       ├── config/                    # App + database (PostgreSQL) configuration
-│       ├── modules/                   # One Nest module per feature
-│       │   ├── auth/                  # included in starter
-│       │   │   ├── auth.module.ts
-│       │   │   ├── auth.controller.ts     # /register, /login, /refresh, /logout
-│       │   │   ├── auth.service.ts        # business logic
-│       │   │   ├── strategies/
-│       │   │   │   └── jwt.strategy.ts            # validates access token
-│       │   │   └── dto/
-│       │   │       ├── register.dto.ts
-│       │   │       ├── login.dto.ts
-│       │   │       └── token-response.dto.ts
-│       │   └── <feature-name>/
-│       │       ├── <feature-name>.module.ts
-│       │       ├── <feature-name>.controller.ts
-│       │       ├── <feature-name>.service.ts
-│       │       ├── entities/
-│       │       └── dto/
-│       ├── prisma/                    # Prisma schema + PostgreSQL migrations
-│       ├── app.module.ts
-│       └── main.ts
-├── .env.example                       # DATABASE_URL, ports, secrets
-└── README.md
-```
-
-### Feature-driven layout
-
-| Layer | Role |
-|-------|------|
-| `frontend/src/app/features/auth/` | Login, register, and `auth.service` (tokens, session) |
-| `backend/src/modules/auth/` | JWT auth: register, login, refresh, logout |
-| `frontend/src/app/features/<feature-name>/` | Additional features — same pattern as `auth/` |
-| `backend/src/modules/<feature-name>/` | Additional features — same pattern as `auth/` |
-| `frontend/src/app/core/` + `shared/` | Cross-cutting Angular code (not tied to one feature) |
-| `backend/src/common/` + `config/` | Cross-cutting NestJS code and PostgreSQL setup |
-
-Auth ships with the starter. Add more features by creating matching folders on both sides and wiring routes / `AppModule` imports.
-
-## Auth setup
-
-Email/password authentication is included out of the box with JWT access + refresh tokens (Prisma + PostgreSQL on the backend, signals-based session on the frontend).
-
-### 1. Environment
+Run from the **repo root** unless noted otherwise.
 
 ```bash
+# 1. Environment
 cp .env.example .env
-```
 
-Update secrets in `.env` before production (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`).
+# 2. Install dependencies
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
 
-### 2. Start PostgreSQL
-
-```bash
+# 3. Start PostgreSQL
 docker compose -f docker/docker-compose.yml up postgres -d
+
+# 4. Run migrations
+cd backend && npm run prisma:migrate:dev && cd ..
+
+# 5. Start API (terminal 1) — port 3001
+cd backend && npm run start:dev
+
+# 6. Start frontend (terminal 2) — port 4200
+cd frontend && npm start
 ```
 
-### 3. Run database migrations
+Open [http://localhost:4200/auth/register](http://localhost:4200/auth/register) or [http://localhost:4200/auth/login](http://localhost:4200/auth/login).
 
-From the repo root, ensure `.env` exists (`cp .env.example .env`), then:
+---
+
+## All commands
+
+### Repo root
+
+| Command | Description |
+|---------|-------------|
+| `cp .env.example .env` | Create local environment file |
+| `npm run check:git` | List untracked files and nested `.git` folders before committing |
+| `docker compose -f docker/docker-compose.yml up postgres -d` | Start PostgreSQL only |
+| `docker compose -f docker/docker-compose.yml up -d` | Start all services (Postgres + backend + frontend) |
+| `docker compose -f docker/docker-compose.yml up --build` | Rebuild and start all services |
+| `docker compose -f docker/docker-compose.yml down` | Stop all services |
+| `docker compose -f docker/docker-compose.yml down -v` | Stop services and delete Postgres volume |
+
+### Backend (`cd backend`)
+
+| Command | Description |
+|---------|-------------|
+| `npm install` | Install dependencies |
+| `npm run start:dev` | Start API with hot reload (port from root `.env`, default **3001**) |
+| `npm run start` | Start API without watch |
+| `npm run start:debug` | Start API with debugger |
+| `npm run start:prod` | Run compiled production build |
+| `npm run build` | Compile TypeScript to `dist/` |
+| `npm run lint` | Run ESLint with auto-fix |
+| `npm run format` | Format code with Prettier |
+| `npm test` | Run unit tests |
+| `npm run test:watch` | Run unit tests in watch mode |
+| `npm run test:cov` | Run unit tests with coverage |
+| `npm run test:e2e` | Run end-to-end auth tests |
+| `npm run prisma:generate` | Regenerate Prisma client after schema changes |
+| `npm run prisma:migrate:dev` | Create/apply migrations (reads root `.env`) |
+| `npm run prisma:studio` | Open Prisma Studio at [http://localhost:5555](http://localhost:5555) |
+
+Prisma commands load `DATABASE_URL` from the **root** `.env` via `dotenv-cli` — there is no `backend/.env`.
+
+### Frontend (`cd frontend`)
+
+| Command | Description |
+|---------|-------------|
+| `npm install` | Install dependencies |
+| `npm start` | Dev server at [http://localhost:4200](http://localhost:4200) with API proxy |
+| `npm run build` | Production build to `dist/frontend` |
+| `npm run watch` | Build in watch mode (development) |
+| `npm test` | Run unit tests (Vitest) |
+| `npm run ng -- <args>` | Run Angular CLI directly |
+
+The dev server proxies `/api/*` → `http://localhost:<PORT>` (from root `.env`). API calls in the browser network tab show as `localhost:4200/api/...` — that is expected.
+
+### Docker ports
+
+| Port | Service | Notes |
+|------|---------|-------|
+| **4200** | Frontend (nginx in Docker) or `ng serve` on host |
+| **3001** | Backend on host (`PORT` in `.env`) |
+| **3000** | Backend in Docker (`docker compose up`) |
+| **5433** | PostgreSQL on host |
+| **5555** | Prisma Studio (when running) |
+
+### Useful one-liners
 
 ```bash
-cd backend
-npm install
-npm run prisma:migrate:dev
+# Generate production JWT secrets
+openssl rand -base64 32
+
+# Connect to Postgres directly
+psql postgresql://postgres:postgres@localhost:5433/starter
+
+# Check API is running
+curl -i http://localhost:3001/api/auth/me
+
+# Preview what git would add from backend
+git add -n backend/
 ```
 
-Prisma reads `DATABASE_URL` from the root `.env` file (not `backend/.env`).
+---
 
-### 4. Start the API (port 3001)
+## Auth & API
 
-```bash
-cd backend
-npm run start:dev
-```
-
-### 5. Start the frontend (port 4200)
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-The dev server proxies `/api/*` to the backend (`PORT` from root `.env`, default `3001`). In the browser network tab, API calls will show as `http://localhost:4200/api/...` — that is expected; the Angular dev server forwards them to the NestJS API.
-
-**Start the backend before the frontend**, or you'll see proxy `ECONNREFUSED` errors.
-
-Open [http://localhost:4200/auth/register](http://localhost:4200/auth/register) to create an account, or [http://localhost:4200/auth/login](http://localhost:4200/auth/login) to sign in.
+Email/password authentication with JWT access + refresh tokens (bcrypt passwords, Prisma + PostgreSQL, Angular signals session).
 
 ### API contract
 
@@ -140,34 +122,189 @@ Open [http://localhost:4200/auth/register](http://localhost:4200/auth/register) 
 | POST | `/api/auth/logout` | `{ refreshToken }` | `204` |
 | GET | `/api/auth/me` | Bearer access token | `{ id, email }` |
 
-## Git workflow
-
-### Why files can go missing from commits
-
-Two common causes in this monorepo:
-
-1. **Never staged** — new folders like `backend/` stay untracked until you `git add` them.
-2. **Nested `.git`** — running `nest new backend` or `ng new frontend` inside the repo creates a sub-repo. Git then ignores the inner files. Fix:
-   ```bash
-   rm -rf backend/.git   # or frontend/.git
-   git add backend/
-   ```
-
-### Before committing (optional manual check)
-
-```bash
-npm run check:git
-```
-
-This lists untracked files and nested `.git` folders. Stage anything that should be tracked, then commit:
-
-```bash
-git add backend/ frontend/src/app/core/ ...
-git commit -m "Your message"
-```
-
 ### Security notes
 
 - Passwords are stored as bcrypt hashes; refresh tokens are stored as SHA-256 hashes in PostgreSQL.
 - Tokens are returned in the JSON body and stored in `localStorage` for simplicity. For production, consider httpOnly cookies for refresh tokens.
 - Generate strong secrets with `openssl rand -base64 32`.
+
+---
+
+## Reusing this starter for a new project
+
+### 1. Create your project from this template
+
+**Option A — GitHub template (recommended)**
+
+1. Click **Use this template** → **Create a new repository** on GitHub.
+2. Clone your new repo:
+   ```bash
+   git clone git@github.com:you/my-new-app.git
+   cd my-new-app
+   ```
+
+**Option B — Clone and re-init**
+
+```bash
+git clone git@github.com:you/angular-nestjs-fullstack-starter.git my-new-app
+cd my-new-app
+rm -rf .git
+git init
+git add .
+git commit -m "Initial commit from angular-nestjs-fullstack-starter"
+```
+
+**Option C — Copy without history**
+
+```bash
+cp -r angular-nestjs-fullstack-starter my-new-app
+cd my-new-app
+rm -rf .git backend/.git frontend/.git
+git init
+```
+
+### 2. Rename and configure
+
+```bash
+cp .env.example .env
+```
+
+Update `.env` for your project:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/my_app_db
+JWT_ACCESS_SECRET=<generate with: openssl rand -base64 32>
+JWT_REFRESH_SECRET=<generate with: openssl rand -base64 32>
+PORT=3001
+```
+
+If you change the database name, also update `POSTGRES_DB` in [`docker/docker-compose.yml`](docker/docker-compose.yml) and the Docker `DATABASE_URL` for the backend service.
+
+Optionally rename the npm package names in [`package.json`](package.json), [`backend/package.json`](backend/package.json), and [`frontend/package.json`](frontend/package.json).
+
+### 3. First-time setup (same as quick start)
+
+```bash
+cd backend && npm install && npm run prisma:migrate:dev && cd ..
+cd frontend && npm install && cd ..
+docker compose -f docker/docker-compose.yml up postgres -d
+```
+
+Then start backend and frontend in separate terminals (see [Quick start](#quick-start-local-dev)).
+
+### 4. Add a new feature
+
+Follow the same pattern as `auth/` on both sides:
+
+**Backend**
+
+```bash
+cd backend
+nest g module modules/products
+nest g controller modules/products --no-spec
+nest g service modules/products --no-spec
+```
+
+1. Add Prisma models in [`backend/prisma/schema.prisma`](backend/prisma/schema.prisma).
+2. Run `npm run prisma:migrate:dev -- --name add_products`.
+3. Import your module in [`backend/src/app.module.ts`](backend/src/app.module.ts).
+4. Protect routes with `@UseGuards(JwtAuthGuard)` where needed.
+
+**Frontend**
+
+1. Create `frontend/src/app/features/products/` with components, service, and routes.
+2. Lazy-load in [`frontend/src/app/app.routes.ts`](frontend/src/app/app.routes.ts).
+3. Call the API via `HttpClient` — the auth interceptor attaches the JWT automatically.
+
+### 5. Scaffold tools — avoid nested git repos
+
+If you regenerate the backend or frontend with CLI tools **inside** the monorepo:
+
+```bash
+nest new backend    # or: ng new frontend
+rm -rf backend/.git # always remove nested .git immediately
+git add backend/
+```
+
+Without removing `backend/.git`, Git tracks an empty folder and your source files never appear in commits.
+
+### 6. Check nothing is missed before committing
+
+```bash
+npm run check:git
+git add .
+git status
+git commit -m "Add products feature"
+```
+
+---
+
+## Folder structure
+
+```
+angular-nestjs-fullstack-starter/
+├── docker/
+│   ├── docker-compose.yml             # Postgres + backend + frontend
+│   ├── backend.Dockerfile
+│   ├── frontend.Dockerfile
+│   └── nginx.conf                     # Proxies /api → backend
+├── frontend/
+│   └── src/
+│       ├── app/
+│       │   ├── core/                  # Guards, interceptors
+│       │   ├── shared/                # Models, reusable UI
+│       │   ├── features/              # One folder per feature
+│       │   │   ├── auth/
+│       │   │   └── <feature-name>/
+│       │   ├── app.config.ts
+│       │   └── app.routes.ts
+│       ├── environments/
+│       └── proxy.conf.js              # Dev proxy → backend PORT
+├── backend/
+│   ├── prisma/                        # Schema + migrations
+│   └── src/
+│       ├── common/
+│       ├── config/
+│       ├── modules/                   # One Nest module per feature
+│       │   ├── auth/
+│       │   └── <feature-name>/
+│       ├── prisma/
+│       ├── app.module.ts
+│       └── main.ts
+├── scripts/
+│   └── check-repo.sh                  # Untracked file checker
+├── .env.example
+└── package.json                       # Root scripts (check:git)
+```
+
+### Feature-driven layout
+
+| Layer | Role |
+|-------|------|
+| `frontend/src/app/features/auth/` | Login, register, `auth.service` (tokens, session) |
+| `backend/src/modules/auth/` | JWT auth: register, login, refresh, logout |
+| `frontend/src/app/features/<feature-name>/` | Additional features — same pattern as `auth/` |
+| `backend/src/modules/<feature-name>/` | Additional features — same pattern as `auth/` |
+| `frontend/src/app/core/` + `shared/` | Cross-cutting Angular code |
+| `backend/src/common/` + `config/` | Cross-cutting NestJS code and PostgreSQL setup |
+
+---
+
+## Git workflow
+
+### Why files can go missing from commits
+
+1. **Never staged** — new folders like `backend/` stay untracked until you `git add` them.
+2. **Nested `.git`** — `nest new` / `ng new` inside the repo creates a sub-repo. Git ignores inner files until you remove it:
+   ```bash
+   rm -rf backend/.git
+   git add backend/
+   ```
+
+### Before committing
+
+```bash
+npm run check:git
+git add .
+git commit -m "Your message"
+```
