@@ -14,18 +14,38 @@
 # ------------------------------------------------------------------------------
 name: angular-nestjs-fullstack-start
 services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: starter
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d starter"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ..
       dockerfile: docker/backend.Dockerfile
     ports:
       - "3000:3000"
-    # env_file:
-    #   - ../.env
+    env_file:
+      - ../.env
     # .env may set PORT=3001 for local (non-Docker) runs; inside the container the app must listen on 3000
-    # to match the right-hand side of "3001:3000" above.
+    # to match the right-hand side of "3000:3000" above.
     environment:
       PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/starter
+    depends_on:
+      postgres:
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -38,3 +58,6 @@ services:
       - "4200:80"
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

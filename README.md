@@ -48,8 +48,7 @@ angular-nestjs-fullstack-starter/
 │       │   │   ├── auth.controller.ts     # /register, /login, /refresh, /logout
 │       │   │   ├── auth.service.ts        # business logic
 │       │   │   ├── strategies/
-│       │   │   │   ├── jwt.strategy.ts            # validates access token
-│       │   │   │   └── jwt-refresh.strategy.ts    # validates refresh token
+│       │   │   │   └── jwt.strategy.ts            # validates access token
 │       │   │   └── dto/
 │       │   │       ├── register.dto.ts
 │       │   │       ├── login.dto.ts
@@ -60,7 +59,7 @@ angular-nestjs-fullstack-starter/
 │       │       ├── <feature-name>.service.ts
 │       │       ├── entities/
 │       │       └── dto/
-│       ├── migrations/                # PostgreSQL schema migrations
+│       ├── prisma/                    # Prisma schema + PostgreSQL migrations
 │       ├── app.module.ts
 │       └── main.ts
 ├── .env.example                       # DATABASE_URL, ports, secrets
@@ -79,3 +78,104 @@ angular-nestjs-fullstack-starter/
 | `backend/src/common/` + `config/` | Cross-cutting NestJS code and PostgreSQL setup |
 
 Auth ships with the starter. Add more features by creating matching folders on both sides and wiring routes / `AppModule` imports.
+
+## Auth setup
+
+Email/password authentication is included out of the box with JWT access + refresh tokens (Prisma + PostgreSQL on the backend, signals-based session on the frontend).
+
+### 1. Environment
+
+```bash
+cp .env.example .env
+```
+
+Update secrets in `.env` before production (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`).
+
+### 2. Start PostgreSQL
+
+```bash
+docker compose -f docker/docker-compose.yml up postgres -d
+```
+
+### 3. Run database migrations
+
+From the repo root, ensure `.env` exists (`cp .env.example .env`), then:
+
+```bash
+cd backend
+npm install
+npm run prisma:migrate:dev
+```
+
+Prisma reads `DATABASE_URL` from the root `.env` file (not `backend/.env`).
+
+### 4. Start the API (port 3001)
+
+```bash
+cd backend
+npm run start:dev
+```
+
+### 5. Start the frontend (port 4200)
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+The dev server proxies `/api/*` to the backend (`PORT` from root `.env`, default `3001`). In the browser network tab, API calls will show as `http://localhost:4200/api/...` — that is expected; the Angular dev server forwards them to the NestJS API.
+
+**Start the backend before the frontend**, or you'll see proxy `ECONNREFUSED` errors.
+
+Open [http://localhost:4200/auth/register](http://localhost:4200/auth/register) to create an account, or [http://localhost:4200/auth/login](http://localhost:4200/auth/login) to sign in.
+
+### API contract
+
+| Method | Path | Body | Response |
+|--------|------|------|----------|
+| POST | `/api/auth/register` | `{ email, password }` | `{ accessToken, refreshToken }` |
+| POST | `/api/auth/login` | `{ email, password }` | `{ accessToken, refreshToken }` |
+| POST | `/api/auth/refresh` | `{ refreshToken }` | `{ accessToken, refreshToken }` |
+| POST | `/api/auth/logout` | `{ refreshToken }` | `204` |
+| GET | `/api/auth/me` | Bearer access token | `{ id, email }` |
+
+## Git workflow
+
+### Why files can go missing from commits
+
+Two common causes in this monorepo:
+
+1. **Never staged** — new folders like `backend/` stay untracked until you `git add` them.
+2. **Nested `.git`** — running `nest new backend` or `ng new frontend` inside the repo creates a sub-repo. Git then ignores the inner files. Fix:
+   ```bash
+   rm -rf backend/.git   # or frontend/.git
+   git add backend/
+   ```
+
+### One-time: install git hooks
+
+Hooks block commit/push if untracked (non-ignored) files exist or a nested `.git` is found:
+
+```bash
+npm run prepare:hooks
+```
+
+### Before every commit (manual check)
+
+```bash
+npm run check:git
+```
+
+If it passes, stage and commit:
+
+```bash
+git add backend/ frontend/src/app/core/ frontend/src/app/features/ ...
+git commit -m "Your message"
+```
+
+### Security notes
+
+- Passwords are stored as bcrypt hashes; refresh tokens are stored as SHA-256 hashes in PostgreSQL.
+- Tokens are returned in the JSON body and stored in `localStorage` for simplicity. For production, consider httpOnly cookies for refresh tokens.
+- Generate strong secrets with `openssl rand -base64 32`.
