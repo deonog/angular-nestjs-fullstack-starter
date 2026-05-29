@@ -54,7 +54,7 @@ frontend/.vscode/*
 !frontend/.vscode/extensions.json
 !frontend/.vscode/mcp.json
 
-# --- backend (Next.js) ---
+# --- backend (NestJS) ---
 backend/node_modules/
 backend/.pnp
 backend/.pnp.*

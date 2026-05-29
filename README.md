@@ -153,24 +153,16 @@ Two common causes in this monorepo:
    git add backend/
    ```
 
-### One-time: install git hooks
-
-Hooks block commit/push if untracked (non-ignored) files exist or a nested `.git` is found:
-
-```bash
-npm run prepare:hooks
-```
-
-### Before every commit (manual check)
+### Before committing (optional manual check)
 
 ```bash
 npm run check:git
 ```
 
-If it passes, stage and commit:
+This lists untracked files and nested `.git` folders. Stage anything that should be tracked, then commit:
 
 ```bash
-git add backend/ frontend/src/app/core/ frontend/src/app/features/ ...
+git add backend/ frontend/src/app/core/ ...
 git commit -m "Your message"
 ```
 

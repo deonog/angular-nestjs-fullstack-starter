@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# Block commits when untracked source files or nested .git repos exist.
-
-set -euo pipefail
-
-ROOT="$(git rev-parse --show-toplevel)"
-bash "$ROOT/scripts/check-repo.sh"

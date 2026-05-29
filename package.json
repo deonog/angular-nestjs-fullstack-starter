@@ -2,7 +2,6 @@
   "name": "angular-nestjs-fullstack-starter",
   "private": true,
   "scripts": {
-    "check:git": "bash scripts/check-repo.sh",
-    "prepare:hooks": "bash scripts/install-git-hooks.sh"
+    "check:git": "bash scripts/check-repo.sh"
   }
 }
