@@ -132,11 +132,31 @@ Email/password authentication with JWT access + refresh tokens (bcrypt passwords
 
 ## Reusing this starter for a new project
 
+### Make this repo a GitHub template (one-time, repo owner)
+
+Do this once on `angular-nestjs-fullstack-starter` so **Use this template** appears for you and others.
+
+1. Push this project to GitHub if it is not there yet:
+   ```bash
+   git remote add origin git@github.com:YOUR_USER/angular-nestjs-fullstack-starter.git
+   git push -u origin main
+   ```
+2. Open the repo in the browser: `https://github.com/YOUR_USER/angular-nestjs-fullstack-starter`
+3. Click **Settings** (top tab bar on the repo — not your account settings).
+4. Under **General** (default section), scroll to **Repository name**.
+5. Enable **Template repository** and save.
+
+After that, on the repo **Code** page you will see a green **Use this template** button (next to **Code**, **Issues**, etc.).
+
+To start a new app from it: **Use this template** → **Create a new repository** → pick name/visibility → **Create repository**.
+
 ### 1. Create your project from this template
 
 **Option A — GitHub template (recommended)**
 
-1. Click **Use this template** → **Create a new repository** on GitHub.
+Requires **Template repository** enabled (see above).
+
+1. Open the starter on GitHub → **Use this template** → **Create a new repository**.
 2. Clone your new repo:
    ```bash
    git clone git@github.com:you/my-new-app.git
