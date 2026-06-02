@@ -5,20 +5,10 @@
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.js",
     "build": "ng build",
+    "format": "prettier --write \"src/**/*.{ts,html,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css,json}\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
   },
   "private": true,
   "packageManager": "npm@11.6.2",

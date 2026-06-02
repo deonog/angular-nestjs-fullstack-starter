@@ -2,6 +2,11 @@
   "name": "angular-nestjs-fullstack-starter",
   "private": true,
   "scripts": {
-    "check:git": "bash scripts/check-repo.sh"
+    "check:git": "bash scripts/check-repo.sh",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
   }
 }

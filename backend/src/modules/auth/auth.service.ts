@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { createHash, randomUUID } from 'crypto';
@@ -54,10 +50,9 @@ export class AuthService {
   async refresh(refreshToken: string): Promise<TokenResponseDto> {
     let payload: RefreshJwtPayload;
     try {
-      payload = await this.jwtService.verifyAsync<RefreshJwtPayload>(
-        refreshToken,
-        { secret: this.config.jwtRefreshSecret },
-      );
+      payload = await this.jwtService.verifyAsync<RefreshJwtPayload>(refreshToken, {
+        secret: this.config.jwtRefreshSecret,
+      });
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -93,10 +88,7 @@ export class AuthService {
     return { userId: payload.sub, email: payload.email };
   }
 
-  private async issueTokenPair(
-    userId: string,
-    email: string,
-  ): Promise<TokenResponseDto> {
+  private async issueTokenPair(userId: string, email: string): Promise<TokenResponseDto> {
     const accessToken = await this.jwtService.signAsync(
       { sub: userId, email } satisfies JwtPayload,
       {

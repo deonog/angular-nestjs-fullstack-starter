@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+.angular
+backend/dist
+backend/node_modules
+backend/coverage
+frontend/dist
+frontend/node_modules
+frontend/.angular
+package-lock.json
+backend/package-lock.json
+frontend/package-lock.json
+backend/prisma/migrations

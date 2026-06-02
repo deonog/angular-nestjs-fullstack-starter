@@ -17,7 +17,7 @@ services:
   postgres:
     image: postgres:16
     ports:
-      - "5433:5432"
+      - '5433:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -25,7 +25,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d starter"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d starter']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -35,7 +35,7 @@ services:
       context: ..
       dockerfile: docker/backend.Dockerfile
     ports:
-      - "3000:3000"
+      - '3000:3000'
     env_file:
       - ../.env
     # .env may set PORT=3001 for local (non-Docker) runs; inside the container the app must listen on 3000
@@ -47,7 +47,7 @@ services:
       postgres:
         condition: service_healthy
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
 
   # Built SPA (`ng build` in frontend.Dockerfile) + nginx. Rebuild with `docker compose up --build`.
   frontend:
@@ -55,7 +55,7 @@ services:
       context: ..
       dockerfile: docker/frontend.Dockerfile
     ports:
-      - "4200:80"
+      - '4200:80'
     depends_on:
       - backend
 

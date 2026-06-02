@@ -53,14 +53,8 @@ describe('Auth (e2e)', () => {
 
     expect(profileResponse.body.email).toBe(email);
 
-    await request(app.getHttpServer())
-      .post('/api/auth/logout')
-      .send({ refreshToken })
-      .expect(204);
+    await request(app.getHttpServer()).post('/api/auth/logout').send({ refreshToken }).expect(204);
 
-    await request(app.getHttpServer())
-      .post('/api/auth/refresh')
-      .send({ refreshToken })
-      .expect(401);
+    await request(app.getHttpServer()).post('/api/auth/refresh').send({ refreshToken }).expect(401);
   });
 });

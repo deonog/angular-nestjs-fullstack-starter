@@ -11,6 +11,7 @@ Run from the **repo root** unless noted otherwise.
 cp .env.example .env
 
 # 2. Install dependencies
+npm install
 cd backend && npm install && cd ..
 cd frontend && npm install && cd ..
 
@@ -35,60 +36,87 @@ Open [http://localhost:4200/auth/register](http://localhost:4200/auth/register) 
 
 ### Repo root
 
-| Command | Description |
-|---------|-------------|
-| `cp .env.example .env` | Create local environment file |
-| `npm run check:git` | List untracked files and nested `.git` folders before committing |
-| `docker compose -f docker/docker-compose.yml up postgres -d` | Start PostgreSQL only |
-| `docker compose -f docker/docker-compose.yml up -d` | Start all services (Postgres + backend + frontend) |
-| `docker compose -f docker/docker-compose.yml up --build` | Rebuild and start all services |
-| `docker compose -f docker/docker-compose.yml down` | Stop all services |
-| `docker compose -f docker/docker-compose.yml down -v` | Stop services and delete Postgres volume |
+| Command                                                      | Description                                                      |
+| ------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `cp .env.example .env`                                       | Create local environment file                                    |
+| `npm install`                                                | Install root dev tools (Prettier, check script)                  |
+| `npm run format`                                             | Format entire repo with Prettier                                 |
+| `npm run format:check`                                       | Check formatting without writing files (CI-friendly)             |
+| `npm run check:git`                                          | List untracked files and nested `.git` folders before committing |
+| `docker compose -f docker/docker-compose.yml up postgres -d` | Start PostgreSQL only                                            |
+| `docker compose -f docker/docker-compose.yml up -d`          | Start all services (Postgres + backend + frontend)               |
+| `docker compose -f docker/docker-compose.yml up --build`     | Rebuild and start all services                                   |
+| `docker compose -f docker/docker-compose.yml down`           | Stop all services                                                |
+| `docker compose -f docker/docker-compose.yml down -v`        | Stop services and delete Postgres volume                         |
 
 ### Backend (`cd backend`)
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install dependencies |
-| `npm run start:dev` | Start API with hot reload (port from root `.env`, default **3001**) |
-| `npm run start` | Start API without watch |
-| `npm run start:debug` | Start API with debugger |
-| `npm run start:prod` | Run compiled production build |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npm run lint` | Run ESLint with auto-fix |
-| `npm run format` | Format code with Prettier |
-| `npm test` | Run unit tests |
-| `npm run test:watch` | Run unit tests in watch mode |
-| `npm run test:cov` | Run unit tests with coverage |
-| `npm run test:e2e` | Run end-to-end auth tests |
-| `npm run prisma:generate` | Regenerate Prisma client after schema changes |
-| `npm run prisma:migrate:dev` | Create/apply migrations (reads root `.env`) |
-| `npm run prisma:studio` | Open Prisma Studio at [http://localhost:5555](http://localhost:5555) |
+| Command                      | Description                                                          |
+| ---------------------------- | -------------------------------------------------------------------- |
+| `npm install`                | Install dependencies                                                 |
+| `npm run start:dev`          | Start API with hot reload (port from root `.env`, default **3001**)  |
+| `npm run start`              | Start API without watch                                              |
+| `npm run start:debug`        | Start API with debugger                                              |
+| `npm run start:prod`         | Run compiled production build                                        |
+| `npm run build`              | Compile TypeScript to `dist/`                                        |
+| `npm run lint`               | Run ESLint with auto-fix                                             |
+| `npm run format`             | Format backend TypeScript with Prettier (uses root `.prettierrc`)    |
+| `npm run format:check`       | Check backend formatting without writing                             |
+| `npm test`                   | Run unit tests                                                       |
+| `npm run test:watch`         | Run unit tests in watch mode                                         |
+| `npm run test:cov`           | Run unit tests with coverage                                         |
+| `npm run test:e2e`           | Run end-to-end auth tests                                            |
+| `npm run prisma:generate`    | Regenerate Prisma client after schema changes                        |
+| `npm run prisma:migrate:dev` | Create/apply migrations (reads root `.env`)                          |
+| `npm run prisma:studio`      | Open Prisma Studio at [http://localhost:5555](http://localhost:5555) |
 
 Prisma commands load `DATABASE_URL` from the **root** `.env` via `dotenv-cli` — there is no `backend/.env`.
 
 ### Frontend (`cd frontend`)
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install dependencies |
-| `npm start` | Dev server at [http://localhost:4200](http://localhost:4200) with API proxy |
-| `npm run build` | Production build to `dist/frontend` |
-| `npm run watch` | Build in watch mode (development) |
-| `npm test` | Run unit tests (Vitest) |
-| `npm run ng -- <args>` | Run Angular CLI directly |
+| Command                | Description                                                                 |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `npm install`          | Install dependencies                                                        |
+| `npm start`            | Dev server at [http://localhost:4200](http://localhost:4200) with API proxy |
+| `npm run format`       | Format frontend TypeScript, HTML, and CSS with Prettier                     |
+| `npm run format:check` | Check frontend formatting without writing                                   |
+| `npm run build`        | Production build to `dist/frontend`                                         |
+| `npm run watch`        | Build in watch mode (development)                                           |
+| `npm test`             | Run unit tests (Vitest)                                                     |
+| `npm run ng -- <args>` | Run Angular CLI directly                                                    |
 
 The dev server proxies `/api/*` → `http://localhost:<PORT>` (from root `.env`). API calls in the browser network tab show as `localhost:4200/api/...` — that is expected.
 
+### Code formatting (Prettier)
+
+One shared config at the repo root ([`.prettierrc`](.prettierrc)) covers backend, frontend, and markdown.
+
+```bash
+# From repo root — format everything
+npm install
+npm run format
+
+# Check only (useful before commit / in CI)
+npm run format:check
+
+# Or format one app
+cd backend && npm run format
+cd frontend && npm run format
+```
+
+**VS Code / Cursor:** Install the [Prettier extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). [`.vscode/settings.json`](.vscode/settings.json) enables format-on-save for the workspace.
+
+Settings: 100 char line width, single quotes, trailing commas. Angular templates use the `angular` parser.
+
 ### Docker ports
 
-| Port | Service | Notes |
-|------|---------|-------|
+| Port     | Service                                          | Notes |
+| -------- | ------------------------------------------------ | ----- |
 | **4200** | Frontend (nginx in Docker) or `ng serve` on host |
-| **3001** | Backend on host (`PORT` in `.env`) |
-| **3000** | Backend in Docker (`docker compose up`) |
-| **5433** | PostgreSQL on host |
-| **5555** | Prisma Studio (when running) |
+| **3001** | Backend on host (`PORT` in `.env`)               |
+| **3000** | Backend in Docker (`docker compose up`)          |
+| **5433** | PostgreSQL on host                               |
+| **5555** | Prisma Studio (when running)                     |
 
 ### Useful one-liners
 
@@ -114,13 +142,13 @@ Email/password authentication with JWT access + refresh tokens (bcrypt passwords
 
 ### API contract
 
-| Method | Path | Body | Response |
-|--------|------|------|----------|
-| POST | `/api/auth/register` | `{ email, password }` | `{ accessToken, refreshToken }` |
-| POST | `/api/auth/login` | `{ email, password }` | `{ accessToken, refreshToken }` |
-| POST | `/api/auth/refresh` | `{ refreshToken }` | `{ accessToken, refreshToken }` |
-| POST | `/api/auth/logout` | `{ refreshToken }` | `204` |
-| GET | `/api/auth/me` | Bearer access token | `{ id, email }` |
+| Method | Path                 | Body                  | Response                        |
+| ------ | -------------------- | --------------------- | ------------------------------- |
+| POST   | `/api/auth/register` | `{ email, password }` | `{ accessToken, refreshToken }` |
+| POST   | `/api/auth/login`    | `{ email, password }` | `{ accessToken, refreshToken }` |
+| POST   | `/api/auth/refresh`  | `{ refreshToken }`    | `{ accessToken, refreshToken }` |
+| POST   | `/api/auth/logout`   | `{ refreshToken }`    | `204`                           |
+| GET    | `/api/auth/me`       | Bearer access token   | `{ id, email }`                 |
 
 ### Security notes
 
@@ -293,20 +321,23 @@ angular-nestjs-fullstack-starter/
 │       └── main.ts
 ├── scripts/
 │   └── check-repo.sh                  # Untracked file checker
+├── .prettierrc                        # Shared Prettier config (backend + frontend)
+├── .prettierignore
+├── .vscode/settings.json              # Format on save (Prettier)
 ├── .env.example
 └── package.json                       # Root scripts (check:git)
 ```
 
 ### Feature-driven layout
 
-| Layer | Role |
-|-------|------|
-| `frontend/src/app/features/auth/` | Login, register, `auth.service` (tokens, session) |
-| `backend/src/modules/auth/` | JWT auth: register, login, refresh, logout |
-| `frontend/src/app/features/<feature-name>/` | Additional features — same pattern as `auth/` |
-| `backend/src/modules/<feature-name>/` | Additional features — same pattern as `auth/` |
-| `frontend/src/app/core/` + `shared/` | Cross-cutting Angular code |
-| `backend/src/common/` + `config/` | Cross-cutting NestJS code and PostgreSQL setup |
+| Layer                                       | Role                                              |
+| ------------------------------------------- | ------------------------------------------------- |
+| `frontend/src/app/features/auth/`           | Login, register, `auth.service` (tokens, session) |
+| `backend/src/modules/auth/`                 | JWT auth: register, login, refresh, logout        |
+| `frontend/src/app/features/<feature-name>/` | Additional features — same pattern as `auth/`     |
+| `backend/src/modules/<feature-name>/`       | Additional features — same pattern as `auth/`     |
+| `frontend/src/app/core/` + `shared/`        | Cross-cutting Angular code                        |
+| `backend/src/common/` + `config/`           | Cross-cutting NestJS code and PostgreSQL setup    |
 
 ---
 
