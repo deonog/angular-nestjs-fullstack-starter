@@ -21,10 +21,10 @@ cd apps/backend && npm install && cd ../..
 cd apps/frontend && npm install && cd ../..
 
 # 4. Start PostgreSQL
-docker compose -f docker/docker-compose.yml up postgres -d
+docker compose up postgres -d
 
 # 5. Run migrations (Prisma 7)
-cd apps/backend && npm run prisma:migrate:dev && cd ../..
+npm run prisma:migrate:dev
 
 # 6. Start API (terminal 1) — port 3001
 cd apps/backend && npm run start:dev
@@ -43,49 +43,47 @@ Open [http://localhost:4200/auth/register](http://localhost:4200/auth/register) 
 angular-nestjs-fullstack-starter/
 ├── apps/
 │   ├── backend/                       # NestJS 11 API
-│   │   ├── prisma/
-│   │   │   ├── schema.prisma
-│   │   │   └── migrations/
-│   │   ├── prisma.config.ts           # Prisma 7 CLI config (loads root .env)
-│   │   ├── generated/prisma/          # Prisma 7 generated client (gitignored)
 │   │   └── src/
-│   │       ├── common/
-│   │       ├── config/
-│   │       ├── modules/
-│   │       │   ├── auth/
-│   │       │   └── users/
-│   │       └── prisma/
+│   │       ├── core/                  # Prisma, config, guards
+│   │       └── features/              # auth/ (domain features)
 │   └── frontend/                      # Angular 22 SPA
 │       └── src/
 │           ├── app/
-│           │   ├── core/              # Guards, interceptors
-│           │   ├── shared/              # Models, reusable UI
-│           │   └── features/          # auth/, home/, <feature>/
+│           │   ├── core/              # auth/, interceptors/
+│           │   ├── shared/            # Reusable UI (presentational)
+│           │   └── features/          # auth/, home/
 │           ├── environments/
 │           └── proxy.conf.js
+├── libs/
+│   └── shared/                        # DTOs, types shared by both apps
+├── prisma/                            # Schema + migrations (repo root)
+├── prisma.config.ts
 ├── docker/
-│   ├── docker-compose.yml
-│   ├── backend.Dockerfile             # Node 26
-│   ├── frontend.Dockerfile            # Node 26
-│   └── nginx.conf
+│   ├── backend/Dockerfile
+│   ├── frontend/Dockerfile
+│   └── nginx/nginx.conf
+├── docker-compose.yml                 # Local development
+├── docker-compose.prod.yml            # Production overrides
 ├── scripts/
 │   └── check-repo.sh
 ├── .env.example
 ├── .nvmrc                             # Node 26
 ├── .prettierrc
-└── package.json
+└── package.json                       # npm workspaces root
 ```
 
 ### Feature-driven layout
 
-| Layer                                     | Role                                          |
-| ----------------------------------------- | --------------------------------------------- |
-| `apps/frontend/src/app/features/auth/`    | Login, register, `AuthService` (`@Service`)   |
-| `apps/backend/src/modules/auth/`          | JWT auth: register, login, refresh, logout    |
-| `apps/frontend/src/app/features/<name>/`  | Additional features — same pattern as `auth/` |
-| `apps/backend/src/modules/<name>/`        | Additional features — same pattern as `auth/` |
-| `apps/frontend/src/app/core/` + `shared/` | Cross-cutting Angular code                    |
-| `apps/backend/src/common/` + `config/`    | Cross-cutting NestJS code                     |
+| Layer                                          | Role                                              |
+| ---------------------------------------------- | ------------------------------------------------- |
+| `apps/frontend/src/app/features/auth/`         | Login, register views + lazy routes               |
+| `apps/frontend/src/app/core/auth/`             | `AuthService`, `AuthStore`, guards                |
+| `apps/backend/src/features/auth/`              | JWT auth: register, login, refresh, logout        |
+| `apps/frontend/src/app/features/<name>/`       | Additional features — same pattern as `auth/`     |
+| `apps/backend/src/features/<name>/`            | Additional features — same pattern as `auth/`     |
+| `apps/frontend/src/app/core/` + `shared/`      | Cross-cutting Angular infrastructure              |
+| `apps/backend/src/core/`                       | Cross-cutting NestJS infrastructure               |
+| `libs/shared/`                                 | Shared DTOs and TypeScript types                  |
 
 ---
 
@@ -97,15 +95,16 @@ angular-nestjs-fullstack-starter/
 | ------------------------------------------------------------ | -------------------------------------------- |
 | `nvm use`                                                    | Switch to Node 26 (from `.nvmrc`)            |
 | `cp .env.example .env`                                       | Create local environment file                |
-| `npm install`                                                | Install root dev tools (Prettier)            |
-| `npm run format`                                             | Format entire repo with Prettier             |
-| `npm run format:check`                                       | Check formatting (CI-friendly)               |
-| `npm run check:git`                                          | List untracked files / nested `.git` folders |
-| `docker compose -f docker/docker-compose.yml up postgres -d` | Start PostgreSQL                             |
-| `docker compose -f docker/docker-compose.yml up -d`          | Start all services                           |
-| `docker compose -f docker/docker-compose.yml up --build`     | Rebuild and start all                        |
-| `docker compose -f docker/docker-compose.yml down`           | Stop all services                            |
-| `docker compose -f docker/docker-compose.yml down -v`        | Stop and delete DB volume                    |
+| `npm install`                                                | Install all workspace dependencies (root)    |
+| `npm run build:backend`                                      | Build shared lib + NestJS API                |
+| `npm run build:frontend`                                     | Build Angular SPA                            |
+| `npm run prisma:generate`                                    | Regenerate Prisma client                     |
+| `npm run prisma:migrate:dev`                                 | Run Prisma migrations                        |
+| `npm run docker:dev`                                         | Start all services via Docker                |
+| `npm run docker:prod`                                        | Start production stack                       |
+| `npm run docker:down`                                        | Stop all services                            |
+| `npm run docker:clean`                                       | Stop and delete DB volume                    |
+| `docker compose up postgres -d`                              | Start PostgreSQL only                        |
 
 ### Backend (`cd apps/backend`)
 
@@ -121,7 +120,7 @@ angular-nestjs-fullstack-starter/
 | `npm run prisma:migrate:dev` | Create/apply migrations                                              |
 | `npm run prisma:studio`      | Open Prisma Studio at [http://localhost:5555](http://localhost:5555) |
 
-Prisma 7 reads `DATABASE_URL` from root `.env` via [`prisma.config.ts`](apps/backend/prisma.config.ts).
+Prisma 7 reads `DATABASE_URL` from root `.env` via [`prisma.config.ts`](prisma.config.ts).
 
 ### Frontend (`cd apps/frontend`)
 

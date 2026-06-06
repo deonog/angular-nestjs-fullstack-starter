@@ -4,12 +4,29 @@
   "engines": {
     "node": ">=26.0.0"
   },
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
   "scripts": {
     "check:git": "bash scripts/check-repo.sh",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:backend": "npm run build --workspace=@angular-nestjs-fullstack-starter/shared && npm run build --workspace=apps/backend",
+    "build:frontend": "npm run build --workspace=apps/frontend",
+    "prisma:generate": "npm exec --workspace=apps/backend -- prisma generate --config ../../prisma.config.ts",
+    "prisma:migrate:dev": "npm exec --workspace=apps/backend -- prisma migrate dev --config ../../prisma.config.ts",
+    "prisma:studio": "npm exec --workspace=apps/backend -- prisma studio --config ../../prisma.config.ts",
+    "docker:dev": "docker compose up --build",
+    "docker:prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d",
+    "docker:down": "docker compose down",
+    "docker:clean": "docker compose down -v --remove-orphans"
   },
   "devDependencies": {
+    "nx": "^21.6.11",
     "prettier": "^3.4.2"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   }
 }

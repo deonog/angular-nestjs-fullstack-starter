@@ -16,6 +16,7 @@
   },
   "packageManager": "npm@11.6.2",
   "dependencies": {
+    "@angular-nestjs-fullstack-starter/shared": "*",
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",
     "@angular/core": "^22.0.0",

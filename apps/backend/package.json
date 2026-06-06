@@ -9,7 +9,7 @@
     "node": ">=26.0.0"
   },
   "scripts": {
-    "build": "prisma generate && nest build",
+    "build": "prisma generate --config ../../prisma.config.ts && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -22,11 +22,12 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "tsx --env-file=../../.env --test test/app.e2e-spec.ts",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:generate": "prisma generate --config ../../prisma.config.ts",
+    "prisma:migrate:dev": "prisma migrate dev --config ../../prisma.config.ts",
+    "prisma:studio": "prisma studio --config ../../prisma.config.ts"
   },
   "dependencies": {
+    "@angular-nestjs-fullstack-starter/shared": "*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",

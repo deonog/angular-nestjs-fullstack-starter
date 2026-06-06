@@ -29,9 +29,9 @@ Thumbs.db
 .env.*
 !.env.example
 
-# --- packages/shared ---
-packages/shared/dist/
-packages/shared/*.tsbuildinfo
+# --- libs/shared ---
+libs/shared/dist/
+libs/shared/*.tsbuildinfo
 
 # --- apps/frontend (Angular) ---
 apps/frontend/dist/

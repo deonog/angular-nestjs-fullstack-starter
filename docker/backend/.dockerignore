@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+*.env
+coverage
+.git
+apps/backend/dist
+apps/backend/coverage
+apps/frontend/dist
+apps/frontend/.angular
