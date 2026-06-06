@@ -1,8 +1,7 @@
 # ------------------------------------------------------------------------------
 # Host ports (what you open in the browser / DB tools):
 #
-#   3001 — NestJS API (`npm run dev` starts this). Frontend calls `http://localhost:3001`.
-#          (3000 is used by workout-fullstack-app on the same machine.)
+#   3001 — NestJS API on host (`cd apps/backend && npm run start:dev`).
 #
 #   5433 — PostgreSQL (Docker `supabase-db`). Use from pgAdmin, psql, or DATABASE_URL when
 #          using compose only. Supabase CLI DB is on 54422 — see supabase/config.toml.

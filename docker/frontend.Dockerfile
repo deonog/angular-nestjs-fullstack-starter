@@ -1,18 +1,18 @@
 # Development stage
-FROM node:20-alpine AS dev
+FROM node:26-alpine AS dev
 WORKDIR /app
-COPY frontend/package*.json ./
+COPY apps/frontend/package*.json ./
 RUN npm install
-COPY frontend/ .
+COPY apps/frontend/ .
 EXPOSE 4200
 CMD ["npm", "start", "--", "--host", "0.0.0.0", "--poll", "500"]
 
 # Production stage
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
-COPY frontend/package*.json ./
+COPY apps/frontend/package*.json ./
 RUN npm ci
-COPY frontend/ .
+COPY apps/frontend/ .
 RUN npm run build
 
 FROM nginx:alpine AS prod

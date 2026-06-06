@@ -1,28 +1,27 @@
 # Development stage
-FROM node:20-alpine AS dev
+FROM node:26-alpine AS dev
 WORKDIR /app
-COPY backend/package*.json ./
+COPY apps/backend/package*.json ./
 RUN npm install
-COPY backend/ .
+COPY apps/backend/ .
 RUN npx prisma generate
 EXPOSE 3000
 CMD ["npm", "run", "start:dev"]
 
 # Production stage
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
-COPY backend/package*.json ./
+COPY apps/backend/package*.json ./
 RUN npm ci
-COPY backend/ .
+COPY apps/backend/ .
 RUN npx prisma generate
 RUN npm run build
 
-FROM node:20-alpine AS prod
+FROM node:26-alpine AS prod
 WORKDIR /app
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
-COPY backend/package*.json ./
+COPY --from=build /app/dist/generated ./dist/generated
+COPY apps/backend/package*.json ./
 RUN npm ci --omit=dev
 EXPOSE 3000
 CMD ["node", "dist/main"]
