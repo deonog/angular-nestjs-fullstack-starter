@@ -4,36 +4,101 @@ Angular 22 + NestJS 11 + PostgreSQL starter with **feature-driven** layout, emai
 
 **Requirements:** Node.js **26+** (see [`.nvmrc`](.nvmrc))
 
-## Quick start (local dev)
+## Initial setup
 
-Run from the **repo root** unless noted otherwise.
+First-time setup from a fresh clone. Run all commands from the **repo root** unless noted.
+
+### Prerequisites
+
+| Tool    | Version      | Notes                                      |
+| ------- | ------------ | ------------------------------------------ |
+| Node.js | **26+**      | `nvm use` reads [`.nvmrc`](.nvmrc)         |
+| Docker  | recent       | Runs PostgreSQL locally                    |
+| npm     | 11+          | Bundled with Node 26                       |
+
+### 1. Clone and install
 
 ```bash
-# 1. Node 26
+# From GitHub template: Use this template → Create a new repository, then:
+git clone git@github.com:YOU/your-new-app.git
+cd your-new-app
 nvm use    # or: fnm use / mise use
-
-# 2. Environment
-cp .env.example .env
-
-# 3. Install dependencies
 npm install
-cd apps/backend && npm install && cd ../..
-cd apps/frontend && npm install && cd ../..
+```
 
-# 4. Start PostgreSQL
+npm workspaces install dependencies for `apps/backend`, `apps/frontend`, and `libs/shared` in one step.
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Replace the placeholder JWT secrets before running the API:
+
+```bash
+openssl rand -base64 32   # run twice — once for access, once for refresh
+```
+
+| Variable             | Default                                              | Action                          |
+| -------------------- | ---------------------------------------------------- | ------------------------------- |
+| `POSTGRES_DB`        | `starter`                                            | Rename when creating a new app  |
+| `DATABASE_URL`       | `postgresql://postgres:changeme@localhost:5433/starter` | Must match `POSTGRES_DB`     |
+| `JWT_ACCESS_SECRET`  | `changeme`                                           | **Replace**                     |
+| `JWT_REFRESH_SECRET` | `changeme`                                           | **Replace**                     |
+
+When renaming the project, also update package names in `package.json`, `libs/shared/package.json`, `docker-compose.yml`, and all `@angular-nestjs-fullstack-starter/shared` imports.
+
+### 3. Start PostgreSQL
+
+```bash
 docker compose up postgres -d
+```
 
-# 5. Run migrations (Prisma 7)
+Postgres is exposed on **5433** on the host (container port 5432).
+
+### 4. Run database migrations
+
+```bash
 npm run prisma:migrate:dev
+```
 
-# 6. Start API (terminal 1) — port 3001
+Creates tables from `prisma/schema.prisma` and applies pending migrations.
+
+### 5. Start the dev servers
+
+Use **two terminals**:
+
+**Terminal 1 — API** (port **3001**):
+
+```bash
 cd apps/backend && npm run start:dev
+```
 
-# 7. Start frontend (terminal 2) — port 4200
+`prestart:dev` automatically generates the Prisma client and builds `@angular-nestjs-fullstack-starter/shared` before the server starts.
+
+**Terminal 2 — Frontend** (port **4200**):
+
+```bash
 cd apps/frontend && npm start
 ```
 
-Open [http://localhost:4200/auth/register](http://localhost:4200/auth/register) or [http://localhost:4200/auth/login](http://localhost:4200/auth/login).
+### 6. Verify
+
+| URL                                                                 | Expected                          |
+| ------------------------------------------------------------------- | --------------------------------- |
+| [localhost:4200/auth/register](http://localhost:4200/auth/register)   | Registration form                 |
+| [localhost:4200/auth/login](http://localhost:4200/auth/login)       | Login form                        |
+| [localhost:3001/api/auth/me](http://localhost:3001/api/auth/me)     | `401` without a token (API is up) |
+
+### Troubleshooting
+
+| Problem                                                          | Fix                                                                 |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `Cannot find module '@angular-nestjs-fullstack-starter/shared'`   | `npm run build -w @angular-nestjs-fullstack-starter/shared`         |
+| `Cannot find module '../../generated/prisma/client'`             | `npm run prisma:generate`                                           |
+| `EADDRINUSE :::3001`                                             | `lsof -ti :3001 \| xargs kill`                                      |
+| DB errors after changing `POSTGRES_DB`                           | `npm run docker:clean && docker compose up postgres -d` then re-run migrations |
 
 ---
 
@@ -198,8 +263,8 @@ ng generate service features/my-feature/my-feature
 
 ### Prisma 7
 
-- Connection URL moved to [`apps/backend/prisma.config.ts`](apps/backend/prisma.config.ts)
-- Client generated to `apps/backend/generated/prisma/` (not `node_modules`)
+- Connection URL configured in [`prisma.config.ts`](prisma.config.ts) (reads root `.env`)
+- Client generated to `apps/backend/src/generated/prisma/` (not `node_modules`)
 - Runtime uses `@prisma/adapter-pg` driver adapter
 - Run `prisma generate` explicitly after schema changes (`npm run build` does this)
 
@@ -209,26 +274,22 @@ Required for Angular 22. Set via `.nvmrc`, `engines` in `package.json`, and `nod
 
 ---
 
-## Reusing this starter for a new project
+## Using this as a GitHub template
 
-### Make this repo a GitHub template (one-time)
+### One-time (repo owner)
 
 1. Push to GitHub
 2. Repo **Settings** → **General** → enable **Template repository**
-3. New projects: **Use this template** → **Create a new repository**
 
 ### Create a new project
 
-```bash
-git clone git@github.com:YOU/my-new-app.git
-cd my-new-app
-cp .env.example .env
-# Update DATABASE_URL, JWT secrets, docker compose POSTGRES_DB if needed
-nvm use
-cd apps/backend && npm install && npm run prisma:migrate:dev
-cd ../frontend && npm install
-docker compose -f docker/docker-compose.yml up postgres -d
-```
+1. On GitHub: **Use this template** → **Create a new repository**
+2. Follow the [**Initial setup**](#initial-setup) section above
+3. Rename the project:
+   - Root `package.json` `name` and `docker-compose.yml` `name`
+   - `libs/shared/package.json` `name` (e.g. `@my-app/shared`)
+   - `@angular-nestjs-fullstack-starter/shared` imports and workspace references
+   - `POSTGRES_DB` and `DATABASE_URL` in `.env`
 
 ### Add a new feature
 
